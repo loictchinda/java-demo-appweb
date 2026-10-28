@@ -29,15 +29,14 @@ jobs:
       - name: Build Docker image locally
         run: docker build -t tlcpro13/webapp-java:latest .
 
-      # 5. Scan de sécurité Trivy (Non bloquant)
+      # 5. Scan de sécurité Trivy via Docker (Non bloquant)
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@v0.28.0
-        with:
-          image-ref: 'tlcpro13/webapp-java:latest'
-          format: 'table'
-          exit-code: '0'
-          severity: 'HIGH,CRITICAL'
-        continue-on-error: true
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image \
+            --severity HIGH,CRITICAL \
+            tlcpro13/webapp-java:latest || true
 
       # 6. Connexion sécurisée à Docker Hub (nécessite les Secrets GitHub)
       - name: Login to Docker Hub
